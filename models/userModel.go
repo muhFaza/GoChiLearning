@@ -13,11 +13,19 @@ type UserLogin struct {
 
 type RegisterResponse struct {
 	Message string `json:"message"`
-	Name		string `json:"name"`
-	Email		string `json:"email"`
+	Name    string `json:"name"`
+	Email   string `json:"email"`
 }
 
 type LoginResponse struct {
 	Message string `json:"message"`
-	Token	 string `json:"token"`
+	Token   string `json:"token"`
+}
+
+func GetUser(email string, password string) (*User, error) {
+	return nil, nil
+}
+
+func GetUserByToken(token string) (*User, error) {
+	return nil, nil
 }

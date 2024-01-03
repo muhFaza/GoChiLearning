@@ -10,6 +10,7 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
+// var users should be moved to user model
 var users []models.User
 
 func RegisterUser(w http.ResponseWriter, r *http.Request) {
@@ -26,6 +27,7 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// append spends more memory
 	users = append(users, userRegister)
 
 	json.NewEncoder(w).Encode(models.RegisterResponse{Message: "User Registered!", Name: userRegister.Name, Email: userRegister.Email})
@@ -44,11 +46,11 @@ func LoginUser(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid Request!", 400)
 	}
 
+	// needs to be moved to user model
 	for _, user := range users {
 		if user.Email == userLogin.Email && user.Password == userLogin.Password {
 			if token, err := helper.GenerateToken(userLogin.Email); err != nil {
 				http.Error(w, "Something went wrong!", 400)
-				return
 			} else {
 				json.NewEncoder(w).Encode(models.LoginResponse{Message: "Login Success!", Token: token})
 			}
@@ -93,13 +95,13 @@ func AuthMiddleware(next http.Handler) http.Handler {
 		token := r.Header.Get("Authorization")
 
 		if token == "" {
-			http.Error(w, "Unauthorized!", 401)
+			http.Error(w, "Unauthorized!", http.StatusUnauthorized)
 			return
 		}
 
 		claims, err := helper.ValidateToken(token)
 		if err != nil {
-			http.Error(w, "Unauthorized!", 401)
+			http.Error(w, "Unauthorized!", http.StatusUnauthorized)
 			return
 		}
 
