@@ -4,9 +4,6 @@ import (
 	"fmt"
 	"os"
 
-	"gochi/models"
-
-	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
@@ -18,7 +15,9 @@ type DBConfig struct {
 	DBName   string
 }
 
-func getDBConfig() *DBConfig {
+var DB *gorm.DB
+
+func GetDBConfig() *DBConfig {
 	return &DBConfig{
 		Host:     "localhost",
 		Port:     5432,
@@ -28,7 +27,7 @@ func getDBConfig() *DBConfig {
 	}
 }
 
-func (config *DBConfig) getDBURL() string {
+func (config *DBConfig) GetDBURL() string {
 	return fmt.Sprintf(
 		"host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
 		config.Host,
@@ -37,19 +36,4 @@ func (config *DBConfig) getDBURL() string {
 		config.Password,
 		config.DBName,
 	)
-}
-
-func InitDB() *gorm.DB {
-	dbConfig := getDBConfig()
-	dsn := dbConfig.getDBURL()
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
-	if err != nil {
-		panic("Failed to connect to database!")
-	}
-	err = db.AutoMigrate(&models.User{})
-	if err != nil {
-		panic("Failed to migrate database!")
-	}
-	fmt.Println("Database connected!")
-	return db
 }

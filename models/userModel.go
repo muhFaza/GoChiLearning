@@ -2,13 +2,17 @@ package models
 
 import (
 	"errors"
+	"gochi/config"
+
+	"gorm.io/gorm"
 )
 
 var Users []User
 
 type User struct {
+	gorm.Model
 	Name     string `json:"name" validate:"required"`
-	Email    string `json:"email" validate:"required,email"`
+	Email    string `json:"email" validate:"required,email" gorm:"unique"`
 	Password string `json:"password" validate:"required,min=6"`
 }
 
@@ -29,19 +33,19 @@ type LoginResponse struct {
 }
 
 func VerifyUser(email string, password string) (*User, error) {
-	for _, user := range Users {
-		if user.Email == email && user.Password == password {
-			return &user, nil
+	var user User
+	config.DB.Where("email = ?", email).First(&user)
+		if user.Email != email || user.Password != password {
+			return nil, errors.New("Invalid Credential!")
 		}
-	}
-	return nil, errors.New("Invalid Credentials!")
+		return &user, nil
 }
 
-func FindDuplicates (email string) bool {
-	for _, user := range Users {
-		if email == user.Email{
-			return true
-		}
+func FindDuplicates(email string) bool {
+	var user User
+	config.DB.Where("email = ?", email).First(&user)
+	if user.Email == email {
+		return true
 	}
 	return false
 }

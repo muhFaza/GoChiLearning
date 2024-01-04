@@ -2,9 +2,10 @@ package handlers
 
 import (
 	"encoding/json"
+	"gochi/config"
 	"gochi/helper"
 	"gochi/models"
-	"io/ioutil"
+	"io"
 	"net/http"
 
 	"github.com/go-playground/validator/v10"
@@ -29,14 +30,16 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	models.Users = append(models.Users, userRegister)
+	config.DB.Create(&userRegister)
 
 	json.NewEncoder(w).Encode(models.RegisterResponse{Message: "User Registered!", Name: userRegister.Name, Email: userRegister.Email})
 }
 
 func GetUsers(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(models.Users)
+	var users []models.User
+	config.DB.Find(&users)
+	json.NewEncoder(w).Encode(users)
 }
 
 func LoginUser(w http.ResponseWriter, r *http.Request) {
@@ -71,7 +74,7 @@ func GetTodos(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Something went wrong!", http.StatusBadRequest)
 	}
 
-	responseData, err := ioutil.ReadAll(response.Body)
+	responseData, err := io.ReadAll(response.Body)
 	if err != nil {
 		http.Error(w, "Something went wrong!", http.StatusBadRequest)
 	}
