@@ -56,6 +56,7 @@ func main() {
 		r.Use(handlers.AuthMiddleware)
 
 		r.Get("/todos", handlers.GetTodos)
+		r.Patch("/profile/name", handlers.UpdateName)
 	})
 
 	http.ListenAndServe(":8080", r)

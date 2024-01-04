@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"gochi/config"
 	"gochi/helper"
 	"gochi/models"
@@ -113,4 +114,38 @@ func AuthMiddleware(next http.Handler) http.Handler {
 		r.Header.Set("email", claims.Email)
 		next.ServeHTTP(w, r)
 	})
+}
+
+func UpdateName(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	type updateName struct {
+		Name string `json:"name" validate:"required"`
+	}
+	var updateReq updateName
+	email := r.Header.Get("email")
+
+	if err := json.NewDecoder(r.Body).Decode(&updateReq); err != nil {
+		http.Error(w, "Invalid Request!", http.StatusBadRequest)
+		return
+	}
+
+	if updateReq.Name == "" {
+		http.Error(w, "Invalid Request!", http.StatusBadRequest)
+		return
+	}
+
+	var user models.User
+	fmt.Println(updateReq)
+	if err := config.DB.Where("email = ?", email).First(&user).Error; err != nil {
+		http.Error(w, "Database error", http.StatusInternalServerError)
+		return
+	}
+
+	user.Name = updateReq.Name
+	if err := config.DB.Save(&user).Error; err != nil {
+		http.Error(w, "Failed to update user", http.StatusInternalServerError)
+		return
+	}
+
+	json.NewEncoder(w).Encode(models.RegisterResponse{Message: "Name successfully updated!", Name: user.Name, Email: user.Email})
 }
