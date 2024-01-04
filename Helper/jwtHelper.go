@@ -1,11 +1,13 @@
 package helper
 
 import (
-    "github.com/golang-jwt/jwt"
-    "time"
+	"os"
+	"time"
+
+	"github.com/golang-jwt/jwt"
 )
 
-var jwtKey = []byte("your_secret_key")
+var jwtKey = []byte(os.Getenv("JWT_SECRET"))
 
 type Claims struct {
     Email string `json:"email"`

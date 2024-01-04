@@ -1,13 +1,19 @@
 package main
 
 import (
+	"fmt"
 	"gochi/handlers"
 	"net/http"
 
+	"github.com/joho/godotenv"
 	"github.com/go-chi/chi/v5"
 )
 
 func main() {
+	if err := godotenv.Load(".env"); err != nil {
+		fmt.Println("Error loading .env file")
+	}
+
 	r := chi.NewRouter()
 
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
@@ -29,6 +35,6 @@ func main() {
 
 		r.Get("/todos", handlers.GetTodos)
 	})
-	
+
 	http.ListenAndServe(":8080", r)
 }
