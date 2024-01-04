@@ -28,11 +28,20 @@ type LoginResponse struct {
 	Token   string `json:"token"`
 }
 
-func FindUser(email string, password string) (*User, error) {
+func VerifyUser(email string, password string) (*User, error) {
 	for _, user := range Users {
 		if user.Email == email && user.Password == password {
 			return &user, nil
 		}
 	}
-	return nil, errors.New("User not found!")
+	return nil, errors.New("Invalid Credentials!")
+}
+
+func FindDuplicates (email string) bool {
+	for _, user := range Users {
+		if email == user.Email{
+			return true
+		}
+	}
+	return false
 }

@@ -15,12 +15,17 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 	var userRegister models.User
 
 	if err := json.NewDecoder(r.Body).Decode(&userRegister); err != nil {
-		http.Error(w, "Invalid Request!", 400)
+		http.Error(w, "Invalid Request!", http.StatusBadRequest)
 	}
 
 	validate := validator.New()
 	if err := validate.Struct(userRegister); err != nil {
-		http.Error(w, err.Error(), 400)
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if models.FindDuplicates(userRegister.Email) {
+		http.Error(w, "Email has been registered!", http.StatusConflict)
 		return
 	}
 
@@ -39,18 +44,18 @@ func LoginUser(w http.ResponseWriter, r *http.Request) {
 	var userLogin models.UserLogin
 
 	if err := json.NewDecoder(r.Body).Decode(&userLogin); err != nil {
-		http.Error(w, "Invalid Request!", 400)
+		http.Error(w, "Invalid Request!", http.StatusBadRequest)
 		return
 	}
 
-	_, err := models.FindUser(userLogin.Email, userLogin.Password)
+	_, err := models.VerifyUser(userLogin.Email, userLogin.Password)
 	if err != nil {
-		http.Error(w, "Invalid Credentials!", 400)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	if token, err := helper.GenerateToken(userLogin.Email); err != nil {
-		http.Error(w, "Something went wrong!", 400)
+		http.Error(w, "Something went wrong!", http.StatusBadRequest)
 		return
 	} else {
 		json.NewEncoder(w).Encode(models.LoginResponse{Message: "Login Success!", Token: token})
@@ -63,12 +68,12 @@ func GetTodos(w http.ResponseWriter, r *http.Request) {
 	response, err := http.Get("https://jsonplaceholder.typicode.com/todos")
 
 	if err != nil {
-		http.Error(w, "Something went wrong!", 400)
+		http.Error(w, "Something went wrong!", http.StatusBadRequest)
 	}
 
 	responseData, err := ioutil.ReadAll(response.Body)
 	if err != nil {
-		http.Error(w, "Something went wrong!", 400)
+		http.Error(w, "Something went wrong!", http.StatusBadRequest)
 	}
 
 	type todos []struct {
