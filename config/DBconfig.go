@@ -18,7 +18,7 @@ type DBConfig struct {
 	DBName   string
 }
 
-func GetDBConfig() *DBConfig {
+func getDBConfig() *DBConfig {
 	return &DBConfig{
 		Host:     "localhost",
 		Port:     5432,
@@ -28,7 +28,7 @@ func GetDBConfig() *DBConfig {
 	}
 }
 
-func (config *DBConfig) GetDBURL() string {
+func (config *DBConfig) getDBURL() string {
 	return fmt.Sprintf(
 		"host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
 		config.Host,
@@ -39,9 +39,9 @@ func (config *DBConfig) GetDBURL() string {
 	)
 }
 
-func initDB() *gorm.DB {
-	dbConfig := GetDBConfig()
-	dsn := dbConfig.GetDBURL()
+func InitDB() *gorm.DB {
+	dbConfig := getDBConfig()
+	dsn := dbConfig.getDBURL()
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		panic("Failed to connect to database!")
@@ -50,5 +50,6 @@ func initDB() *gorm.DB {
 	if err != nil {
 		panic("Failed to migrate database!")
 	}
+	fmt.Println("Database connected!")
 	return db
 }
