@@ -1,5 +1,11 @@
 package models
 
+import (
+	"errors"
+)
+
+var Users []User
+
 type User struct {
 	Name     string `json:"name" validate:"required"`
 	Email    string `json:"email" validate:"required,email"`
@@ -22,10 +28,11 @@ type LoginResponse struct {
 	Token   string `json:"token"`
 }
 
-func GetUser(email string, password string) (*User, error) {
-	return nil, nil
-}
-
-func GetUserByToken(token string) (*User, error) {
-	return nil, nil
+func FindUser(email string, password string) (*User, error) {
+	for _, user := range Users {
+		if user.Email == email && user.Password == password {
+			return &user, nil
+		}
+	}
+	return nil, errors.New("User not found!")
 }

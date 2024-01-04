@@ -10,9 +10,6 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
-// var users should be moved to user model
-var users []models.User
-
 func RegisterUser(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	var userRegister models.User
@@ -27,15 +24,14 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// append spends more memory
-	users = append(users, userRegister)
+	models.Users = append(models.Users, userRegister)
 
 	json.NewEncoder(w).Encode(models.RegisterResponse{Message: "User Registered!", Name: userRegister.Name, Email: userRegister.Email})
 }
 
 func GetUsers(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(users)
+	json.NewEncoder(w).Encode(models.Users)
 }
 
 func LoginUser(w http.ResponseWriter, r *http.Request) {
@@ -44,21 +40,22 @@ func LoginUser(w http.ResponseWriter, r *http.Request) {
 
 	if err := json.NewDecoder(r.Body).Decode(&userLogin); err != nil {
 		http.Error(w, "Invalid Request!", 400)
+		return
 	}
 
-	// needs to be moved to user model
-	for _, user := range users {
-		if user.Email == userLogin.Email && user.Password == userLogin.Password {
-			if token, err := helper.GenerateToken(userLogin.Email); err != nil {
-				http.Error(w, "Something went wrong!", 400)
-			} else {
-				json.NewEncoder(w).Encode(models.LoginResponse{Message: "Login Success!", Token: token})
-			}
-			return
-		}
+	_, err := models.FindUser(userLogin.Email, userLogin.Password)
+	if err != nil {
+		http.Error(w, "Invalid Credentials!", 400)
+		return
 	}
 
-	http.Error(w, "Invalid Credentials!", 400)
+	if token, err := helper.GenerateToken(userLogin.Email); err != nil {
+		http.Error(w, "Something went wrong!", 400)
+		return
+	} else {
+		json.NewEncoder(w).Encode(models.LoginResponse{Message: "Login Success!", Token: token})
+		return
+	}
 }
 
 func GetTodos(w http.ResponseWriter, r *http.Request) {
